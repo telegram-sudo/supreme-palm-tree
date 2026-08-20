@@ -11,7 +11,7 @@ OWNER_ID = int(os.getenv("OWNER_ID", "0"))
 
 # Groq / AI
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "groq/compound")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 AI_SYSTEM_PROMPT = os.getenv("AI_SYSTEM_PROMPT", "").strip()
 
 # Auto Reply
