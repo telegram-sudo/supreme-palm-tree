@@ -1,0 +1,9 @@
+kurigram>=2.1.0
+tgcrypto
+python-dotenv
+aiohttp
+aiosqlite
+openai
+uvloop
+gunicorn
+flask
