@@ -28,14 +28,35 @@ def register(app: Client):
     )
     async def auto_reply_handler(client: Client, message: Message):
 
+        # IMPORTANT: debug log BEFORE any condition
+        print(
+            f"[DEBUG] Message received | "
+            f"chat_id={message.chat.id} | "
+            f"type={message.chat.type} | "
+            f"text={message.text!r}",
+            flush=True
+        )
+
         if not AUTO_REPLY_ENABLED:
+            print(
+                "[DEBUG] Auto-reply disabled by config",
+                flush=True
+            )
             return
 
         if ONLY_PRIVATE and message.chat.type.name != "PRIVATE":
+            print(
+                "[DEBUG] Message rejected: not private",
+                flush=True
+            )
             return
 
         # Ignore messages from self
         if message.from_user and message.from_user.is_self:
+            print(
+                "[DEBUG] Message rejected: self message",
+                flush=True
+            )
             return
 
         user_id = (
@@ -47,19 +68,40 @@ def register(app: Client):
         text = message.text or message.caption or ""
 
         if not text.strip():
+            print(
+                "[DEBUG] Message rejected: empty text",
+                flush=True
+            )
             return
 
         is_owner = user_id == OWNER_ID
 
-        # Natural delay (looks more human)
+        print(
+            f"[DEBUG] Processing message | "
+            f"user_id={user_id} | "
+            f"is_owner={is_owner}",
+            flush=True
+        )
+
+        # Natural delay
         delay = random.uniform(
             REPLY_DELAY_MIN,
             REPLY_DELAY_MAX
         )
 
+        print(
+            f"[DEBUG] Waiting {delay:.2f}s before reply",
+            flush=True
+        )
+
         await asyncio.sleep(delay)
 
         # Show typing
+        print(
+            "[DEBUG] Sending typing action",
+            flush=True
+        )
+
         await client.send_chat_action(
             message.chat.id,
             ChatAction.TYPING
@@ -69,14 +111,34 @@ def register(app: Client):
             random.uniform(0.8, 1.0)
         )
 
+        print(
+            "[DEBUG] Calling generate_reply()",
+            flush=True
+        )
+
         reply = await generate_reply(
             user_id,
             text,
             is_owner=is_owner
         )
 
+        print(
+            f"[DEBUG] generate_reply() returned: "
+            f"{reply!r}",
+            flush=True
+        )
+
         if reply:
             await message.reply(reply)
+
+            print(
+                "[DEBUG] Reply sent successfully",
+                flush=True
+            )
+
+    # =========================
+    # Clear memory
+    # =========================
 
     @app.on_message(
         filters.command(
@@ -89,9 +151,7 @@ def register(app: Client):
         client: Client,
         message: Message
     ):
-        """Clear conversation memory for a user.
-        Usage: .clear (reply to user) or .clear <user_id>
-        """
+        """Clear conversation memory for a user."""
 
         if (
             message.reply_to_message
@@ -112,7 +172,9 @@ def register(app: Client):
                 target = int(parts[1])
 
             except ValueError:
-                await message.reply("Invalid user_id")
+                await message.reply(
+                    "Invalid user_id"
+                )
                 return
 
         await db.clear_history(target)
@@ -120,6 +182,10 @@ def register(app: Client):
         await message.reply(
             f"🧹 Memory cleared for `{target}`"
         )
+
+    # =========================
+    # Notes
+    # =========================
 
     @app.on_message(
         filters.command(
@@ -132,9 +198,7 @@ def register(app: Client):
         client: Client,
         message: Message
     ):
-        """Set notes for a user.
-        Usage: .note <user_id> <notes>
-        """
+        """Set notes for a user."""
 
         parts = message.text.split(maxsplit=2)
 
@@ -148,16 +212,25 @@ def register(app: Client):
             target = int(parts[1])
 
         except ValueError:
-            await message.reply("Invalid user_id")
+            await message.reply(
+                "Invalid user_id"
+            )
             return
 
         notes = parts[2]
 
-        await db.set_notes(target, notes)
+        await db.set_notes(
+            target,
+            notes
+        )
 
         await message.reply(
             f"📝 Notes saved for `{target}`"
         )
+
+    # =========================
+    # Ping
+    # =========================
 
     @app.on_message(
         filters.command(
@@ -174,4 +247,7 @@ def register(app: Client):
             "🏓 Pong! HazelAI is alive."
         )
 
-    print("[Mod] AI Auto-Reply loaded")
+    print(
+        "[Mod] AI Auto-Reply loaded",
+        flush=True
+    )
