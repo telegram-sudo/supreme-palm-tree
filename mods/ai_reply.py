@@ -18,7 +18,7 @@ from core.database import db
 
 
 def register(app: Client):
-    """Register AI auto-reply handlers."""
+    """Register EAGLESPY AI auto-reply handlers."""
 
     @app.on_message(
         filters.incoming
@@ -28,7 +28,6 @@ def register(app: Client):
     )
     async def auto_reply_handler(client: Client, message: Message):
 
-        # IMPORTANT: debug log BEFORE any condition
         print(
             f"[DEBUG] Message received | "
             f"chat_id={message.chat.id} | "
@@ -244,10 +243,10 @@ def register(app: Client):
         message: Message
     ):
         await message.reply(
-            "🏓 Pong! HazelAI is alive."
+            "🏓 Pong! EAGLESPY is alive."
         )
 
     print(
-        "[Mod] AI Auto-Reply loaded",
+        "[Mod] EAGLESPY AI Auto-Reply loaded",
         flush=True
     )
